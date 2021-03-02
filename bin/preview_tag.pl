@@ -2,21 +2,32 @@
 
 $|=1;
 
+# Example input:
+# * $ARGV[0]='/^    def handle_after(self, cmd, parse_context, ret_val):$//^    def handle_after(self, cmd, parse_context, ret_val):$//^    def handle_after(self, cmd, parse_context, ret_val):$//^    def handle_after(self, cmd, parse_context, ret_val):$//^    def handle_after(self, cmd, parse_context, ret_val):$//^    def handle_after(self, cmd, parse_context, ret_val):$//^    def handle_after(self, cmd, parse_context, ret_val):$/'
+#
+# * $ARGV[1]='3. ScaleUpTriggerInterception.handle_after : docko/client/plugins/scale/commands.py'
+#
+# * $ARGV[2]='50'
+
 if (@ARGV < 2 or @ARGV > 3) {
     print STDERR "Arguments are PATTERNS INFO [MAXLINES=100]\n";
     print STDERR "Got ", int(@ARGV)," args:\n@ARGV\n";
     exit 1;
 }
 
-#open(F1, ">", "/tmp/1");
-#print F1 $ARGV[0];
-#close(F1);
-#open(F2, ">", "/tmp/2");
-#print F2 $ARGV[1];
-#close(F2);
-#open(F3, ">", "/tmp/3");
-#print F3 $ARGV[2];
-#close(F3);
+if (exists($ENV['OONAV_DEBUG'])) {
+    # Reproduce then with:
+    #  preview_tag.pl "$(cat /tmp/1)" "$(cat /tmp/2)" "$(cat /tmp/3)"
+    open(F1, ">", "/tmp/1");
+    print F1 $ARGV[0];
+    close(F1);
+    open(F2, ">", "/tmp/2");
+    print F2 $ARGV[1];
+    close(F2);
+    open(F3, ">", "/tmp/3");
+    print F3 $ARGV[2];
+    close(F3);
+}
 
 $patterns=$ARGV[0];
 $info=$ARGV[1];
@@ -42,9 +53,11 @@ if (@parts) {
 $pattern=substr($patterns[$index], 1);
 $pattern=~s/([()])/\\$1/g;
 
-#open(F4, ">", "/tmp/4");
-#print F4 $pattern;
-#close(F4);
+if (exists($ENV['OONAV_DEBUG'])) {
+    open(F4, ">", "/tmp/4");
+    print F4 $pattern;
+    close(F4);
+}
 
 $pipe2=undef;
 if (grep { -x "$_/batcat"} split /:/,$ENV{PATH}) {
@@ -52,12 +65,15 @@ if (grep { -x "$_/batcat"} split /:/,$ENV{PATH}) {
 }
 elsif (grep { -x "$_/bat"} split /:/,$ENV{PATH}) {
     $pipe2="bat --color=always -u --style=snip --paging=never $lang";
-} else {
-    $pipe2='cat';
 }
 
 open(FILE, "<", $file) or die "Can't open < $file: $!";
-open(FOUT, "| $pipe2") or die "Can't open a pipe to $pipe2: $!";
+
+if ($pipe2) {
+    open($fout, "| $pipe2") or die "Can't open a pipe to $pipe2: $!";
+} else {
+    $fout=STDOUT;
+}
 
 $found=0;
 for my $line (<FILE>) {
@@ -65,13 +81,18 @@ for my $line (<FILE>) {
         $found=1;
     }
     if ($found && $max_lines) {
-        print FOUT "$line\n";
+        print $fout "$line\n";
         $max_lines--;
     }
 }
+
+# Finish up
 close(FILE);
-if ($found) {
-    close(FOUT);
-} else {
+if ($pipe2) {
+    close($fout);
+}
+if (!$found) {
     print STDERR "Failed to find '$pattern' in $file.\n"
 }
+
+# vim: sw=4:ts=4:expandtab:

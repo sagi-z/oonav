@@ -25,6 +25,13 @@ function! s:Dbg(msg)
     endif
 endfunction
 
+function! s:PreviewExe(msg)
+    if executable(g:oonav#perl)
+        return g:oonav#perl . ' -e ' . s:preview
+    else
+        throw 'Perl ' . g:oonav#perl . ' was not found (change g:oonav#perl)'
+    endif
+endfunction
 
 " Return the tag from a tags list which points to current line
 function! s:MyTag(tags)
@@ -34,7 +41,9 @@ function! s:MyTag(tags)
         let save_cursor = getcurpos()
         if tag.cmd[0] == '/'
             let pattern = tag.cmd[1:-3]
-            if g:oonav#debug_on | call s:Dbg("Trying self search pattern " . pattern) | endif
+            if g:oonav#debug_on
+                call s:Dbg("Trying self search pattern " . pattern)
+            endif
             let l = search(pattern)
         else
             exe tag.cmd
@@ -89,7 +98,10 @@ function! s:GetBaseClasses(derived, add_self=0)
     endif
     let res = keys(res)
     let s:base_classes[a:derived] = res
-    if g:oonav#debug_on | call s:Dbg('GetBaseClasses(' . a:derived . ',' . a:add_self . ') returning ' . string(res)) | endif
+    if g:oonav#debug_on
+        call s:Dbg('GetBaseClasses(' . a:derived . ',' . a:add_self .
+                    \ ') returning ' . string(res))
+    endif
     return res
 endfunction
 
@@ -97,8 +109,10 @@ endfunction
 function! s:NavDownOptions(name)
   let list = []
   " Get all method tags for this symbol
-  let s:current_tags = filter(taglist('\<' . a:name . '$'), 'v:val.kind == "m"')
-  if g:oonav#debug_on | call s:Dbg("method tags found:" . string(s:current_tags)) | endif
+  let s:current_tags = filter(taglist('\<' . a:name . '$'),
+              \ 'v:val.kind == "m"')
+  if g:oonav#debug_on | call s:Dbg("method tags found:" .
+              \ string(s:current_tags)) | endif
 
   " Find this line in that list
   let my_tag = s:MyTag(s:current_tags)
@@ -110,10 +124,12 @@ function! s:NavDownOptions(name)
   if g:oonav#debug_on | call s:Dbg("class is " . base_class) | endif
 
   " Remove self
-  let s:current_tags = filter(s:current_tags, {idx, val -> val.class != base_class})
+  let s:current_tags = filter(s:current_tags,
+              \ {idx, val -> val.class != base_class})
 
   " Remove ones which our class is not a base for them
-  let s:current_tags = filter(s:current_tags, {idx, val -> count(s:GetBaseClasses(val.class), base_class)})
+  let s:current_tags = filter(s:current_tags,
+              \ {idx, val -> count(s:GetBaseClasses(val.class), base_class)})
 
   " Build the user options
   let i = 0
@@ -146,6 +162,11 @@ endfunction
 " Main entry point from outside - nav Down/Up for name under cursor
 function! s:Nav(name, direction)
     call s:ClearCache()
+    if g:oonav#debug_on
+        let $OONAV_DEBUG=1
+    else
+        unlet $OONAV_DEBUG
+    endif
     let options = s:Nav{a:direction}Options(a:name)
     if g:oonav#debug_on | call s:Dbg("options are " . string(options)) | endif
     let l = len(options)
@@ -160,11 +181,14 @@ function! s:Nav(name, direction)
                     for tag in s:current_tags
                         let patterns .= tag.cmd
                     endfor
-                    let fzf_options = ['--ansi', '--prompt', 'Navigate' . a:direction . '?>',
-                                \ '--preview', s:preview . " '" . patterns . "' {} 50",
-                                \ '--preview-window=down:60%']
+                    let fzf_options = ['--ansi',
+                                \ '--prompt', 'Navigate' . a:direction . '?>',
+                                \ '--preview',
+                                \ s:PreviewExe() . " '" . patterns . "' {} 50",
+                                \ '--preview-window=down']
                 endif
-                call fzf#run(fzf#wrap({'source': options, 'sink': funcref('<SID>FzfSink'),
+                call fzf#run(fzf#wrap({'source': options,
+                            \ 'sink': funcref('<SID>FzfSink'),
                             \ 'options': fzf_options}))
             else
                 call insert(options, 'Please select:')
@@ -179,18 +203,17 @@ endfunction
 
 " map \jd (jump down the class hierarchy)
 if !hasmapto('<Plug>(oonav-down)')
-    map <unique> <Leader>jd  <Plug>(oonav-down)
+    map <unique> gi  <Plug>(oonav-down)
 endif
-noremap <script> <Plug>(oonav-down)  <SID>NavDown
-noremap <silent> <SID>NavDown  :call <SID>Nav(expand("<cword>"), 'Down')<CR>
+nnoremap <script> <Plug>(oonav-down)  <SID>NavDown
+nnoremap <silent> <SID>NavDown  :call <SID>Nav(expand("<cword>"), 'Down')<CR>
 
 " map \ju (jump up the class hierarchy)
 if !hasmapto('<Plug>(oonav-up)')
-    map <unique> <Leader>ju  <Plug>(oonav-up)
+    map <unique> gb  <Plug>(oonav-up)
 endif
-noremap <script> <Plug>(oonav-up)  <SID>NavUp
-
-noremap <silent> <SID>NavUp  :call <SID>Nav(expand("<cword>"), 'Up')<CR>
+nnoremap <script> <Plug>(oonav-up)  <SID>NavUp
+nnoremap <silent> <SID>NavUp  :call <SID>Nav(expand("<cword>"), 'Up')<CR>
 
 " restore compatible option
 let &cpo = s:save_cpo

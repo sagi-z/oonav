@@ -1,0 +1,62 @@
+*oonav.txt*  Plugin for navigating object oriented code.
+  
+This plugin navigates to overriding methods in derived classes or derived
+classes, either up or down the inheritance tree, based on tags.
+ 
+Note this is based on tags parsing and needs a tags file for the entire
+project to work across files. Managing the tags file is on you (you can try
+the 'onetag' vim plugin to automatically manage tags).
+
+Contents:
+========
+* MAPPINGS (|oonav-mappings|)
+* SETTINGS (|oonav-settings|)
+* LICENSE (|oonav-license|)
+
+
+
+MAPPINGS~
+                                                      *oonav-mappings*
+>
+    "Goto implementation (down the class hierarchy)
+    map <unique> gi  <Plug>(oonav-down)
+
+    "Goto base (up the class hierarchy)
+    map <unique> gb  <Plug>(oonav-up)
+<
+
+SETTINGS~
+                                                              *oonav-settings*
+
+
+                                                           *g:oonav#perl*
+
+oonav fzf tag preview is using perl. If 'perl' is not in your path the you can
+specify the full path here.
+The default is to use 'perl' from your PATH.
+>
+    let g:oonav#perl = 'perl'
+<
+                                                           *g:oonav#allow_fzf*
+
+oonav will automatiaclly try to use fzf if fzf is installed.
+If you don't want to allow fzf change the value to 0. The default is 1.
+>
+    let g:oonav#allow_fzf = 1
+<
+                                                    *g:oonav#allow_fzf_preview*
+
+oonav will automatiaclly try to use fzf with preview if fzf is installed. If
+you want to allow fzf without preview change the value to 0. The default is 1.
+>
+    let g:oonav#allow_fzf_preview = 1
+<
+
+LICENSE~
+                                                               *oonav-license*
+
+MIT
+
+
+==============================================================================
+vim:tw=78:sw=2:ts=2:ft=help:norl:nowrap:
