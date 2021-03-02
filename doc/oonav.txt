@@ -1,22 +1,33 @@
 *oonav.txt*  Plugin for navigating object oriented code.
   
-This plugin navigates to overriding methods in derived classes or derived
-classes, either up or down the inheritance tree, based on tags.
+Description~
+
+This plugin navigates to overridden methods in derived classes either up or
+down the inheritance tree, based on tags.
+
  
-Note this is based on tags parsing and needs a tags file for the entire
+Notes
+
+* This is based on tags parsing and needs a tags file for the entire
 project to work across files. Managing the tags file is on you (you can try
 the 'onetag' vim plugin to automatically manage tags).
 
-Contents:
-========
+* Currently only the default "forward searching patterns" are supported.
+
+* The preview (if enabled) might be wrong if there are several tags with the
+same symbol in the same source file.
+
+Contents~
+
 * MAPPINGS (|oonav-mappings|)
 * SETTINGS (|oonav-settings|)
 * LICENSE (|oonav-license|)
 
 
+Mappings~
+                                                              *oonav-mappings*
 
-MAPPINGS~
-                                                      *oonav-mappings*
+These mappings are created by default (see |g:oonav#create_mappings|):
 >
     "Goto derived (down the class hierarchy)
     map <unique> <Leader>gd  <Plug>(oonav-down)
@@ -25,17 +36,15 @@ MAPPINGS~
     map <unique> <Leader>gb  <Plug>(oonav-up)
 <
 
-SETTINGS~
+Settings~
                                                               *oonav-settings*
 
 
-                                                           *g:oonav#perl*
+                                                     *g:oonav#create_mappings*
 
-oonav fzf tag preview is using perl. If 'perl' is not in your path the you can
-specify the full path here.
-The default is to use 'perl' from your PATH.
+To disable default mappings creation use:
 >
-    let g:oonav#perl = 'perl'
+    let g:oonav#create_mappings = 0
 <
                                                            *g:oonav#allow_fzf*
 
@@ -51,8 +60,16 @@ you want to allow fzf without preview change the value to 0. The default is 1.
 >
     let g:oonav#allow_fzf_preview = 1
 <
+                                                                *g:oonav#perl*
 
-LICENSE~
+oonav fzf tag preview is using perl. If 'perl' is not in your path the you can
+specify the full path here.
+The default is to use 'perl' from your PATH.
+>
+    let g:oonav#perl = 'perl'
+<
+
+License~
                                                                *oonav-license*
 
 MIT
