@@ -18,11 +18,11 @@ Contents:
 MAPPINGS~
                                                       *oonav-mappings*
 >
-    "Goto implementation (down the class hierarchy)
-    map <unique> gi  <Plug>(oonav-down)
+    "Goto derived (down the class hierarchy)
+    map <unique> <Leader>gd  <Plug>(oonav-down)
 
     "Goto base (up the class hierarchy)
-    map <unique> gb  <Plug>(oonav-up)
+    map <unique> <Leader>gb  <Plug>(oonav-up)
 <
 
 SETTINGS~

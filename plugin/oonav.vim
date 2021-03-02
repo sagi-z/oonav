@@ -16,8 +16,8 @@ let g:loaded_oonav = 1
 
 let s:current_tags = []
 
-let s:bin_dir = expand('<sfile>:p:h:h').'/bin/'
-let s:preview = s:bin_dir . 'preview_tag.pl'
+let s:bin_dir = expand('<sfile>:p:h:h').'/bin'
+let s:preview = s:bin_dir . '/preview_tag.pl'
 
 function! s:Dbg(msg)
     if g:oonav#debug_on
@@ -25,9 +25,14 @@ function! s:Dbg(msg)
     endif
 endfunction
 
-function! s:PreviewExe(msg)
+function! s:PreviewExe()
     if executable(g:oonav#perl)
-        return g:oonav#perl . ' -e ' . s:preview
+        if g:oonav#debug_on
+            let flags="--debug"
+        else
+            let flags=""
+        endif
+        return g:oonav#perl . ' ' . s:preview . " $flags"
     else
         throw 'Perl ' . g:oonav#perl . ' was not found (change g:oonav#perl)'
     endif
@@ -162,11 +167,6 @@ endfunction
 " Main entry point from outside - nav Down/Up for name under cursor
 function! s:Nav(name, direction)
     call s:ClearCache()
-    if g:oonav#debug_on
-        let $OONAV_DEBUG=1
-    else
-        unlet $OONAV_DEBUG
-    endif
     let options = s:Nav{a:direction}Options(a:name)
     if g:oonav#debug_on | call s:Dbg("options are " . string(options)) | endif
     let l = len(options)
@@ -185,7 +185,9 @@ function! s:Nav(name, direction)
                                 \ '--prompt', 'Navigate' . a:direction . '?>',
                                 \ '--preview',
                                 \ s:PreviewExe() . " '" . patterns . "' {} 50",
-                                \ '--preview-window=down']
+                                \ '--preview-window=down:50%']
+                    if g:oonav#debug_on | call s:Dbg("fzf_options are " .
+                                \ string(fzf_options)) | endif
                 endif
                 call fzf#run(fzf#wrap({'source': options,
                             \ 'sink': funcref('<SID>FzfSink'),
@@ -201,16 +203,16 @@ function! s:Nav(name, direction)
     endif
 endfunction
 
-" map \jd (jump down the class hierarchy)
+" map \gd (goto derived down the class hierarchy)
 if !hasmapto('<Plug>(oonav-down)')
-    map <unique> gi  <Plug>(oonav-down)
+    map <unique> <Leader>gd  <Plug>(oonav-down)
 endif
 nnoremap <script> <Plug>(oonav-down)  <SID>NavDown
 nnoremap <silent> <SID>NavDown  :call <SID>Nav(expand("<cword>"), 'Down')<CR>
 
-" map \ju (jump up the class hierarchy)
+" map \gb (goto base up the class hierarchy)
 if !hasmapto('<Plug>(oonav-up)')
-    map <unique> gb  <Plug>(oonav-up)
+    map <unique> <Leader>gb  <Plug>(oonav-up)
 endif
 nnoremap <script> <Plug>(oonav-up)  <SID>NavUp
 nnoremap <silent> <SID>NavUp  :call <SID>Nav(expand("<cword>"), 'Up')<CR>

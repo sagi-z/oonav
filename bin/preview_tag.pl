@@ -1,5 +1,7 @@
 #!/usr/bin/env perl
 
+use strict;
+
 $|=1;
 
 # Example input:
@@ -9,57 +11,61 @@ $|=1;
 #
 # * $ARGV[2]='50'
 
-if (@ARGV < 2 or @ARGV > 3) {
-    print STDERR "Arguments are PATTERNS INFO [MAXLINES=100]\n";
+if (@ARGV < 2 or @ARGV > 4) {
+    print STDERR "Arguments are [--debug] PATTERNS INFO [MAXLINES=100]\n";
     print STDERR "Got ", int(@ARGV)," args:\n@ARGV\n";
     exit 1;
 }
 
-if (exists($ENV['OONAV_DEBUG'])) {
+my $debug_on=0;
+if ($ARGV[0] eq '--debug') {
+    $debug_on=1;
+    shift @ARGV;
+}
+
+if ($debug_on) {
     # Reproduce then with:
-    #  preview_tag.pl "$(cat /tmp/1)" "$(cat /tmp/2)" "$(cat /tmp/3)"
-    open(F1, ">", "/tmp/1");
+    #  preview_tag.pl "$(cat /tmp/oonav1)" "$(cat /tmp/oonav2)" "$(cat /tmp/oonav3)"
+    open(F1, ">", "/tmp/oonav1");
     print F1 $ARGV[0];
     close(F1);
-    open(F2, ">", "/tmp/2");
+    open(F2, ">", "/tmp/oonav2");
     print F2 $ARGV[1];
     close(F2);
-    open(F3, ">", "/tmp/3");
+    open(F3, ">", "/tmp/oonav3");
     print F3 $ARGV[2];
     close(F3);
 }
 
-$patterns=$ARGV[0];
-$info=$ARGV[1];
-$max_lines=$ARGV[2] ? $ARGV[2] : 100;
+my $patterns=$ARGV[0];
+my $info=$ARGV[1];
+my $max_lines=$ARGV[2] ? $ARGV[2] : 100;
 
-
-@info=split(/\s/, $info);
+my @info=split(/\s/, $info);
  
 # The info is indexed with a period after the number
-$index=int((split(/\./,$info[0]))[0]) - 1;
+my $index=int((split(/\./,$info[0]))[0]) - 1;
 
 # The last info part is the filename
-$file=$info[-1];
-@parts=split(/\./, $file);
+my $file=$info[-1];
+my @parts=split(/\./, $file);
+my $lang="";
 if (@parts) {
     $lang="--language $parts[-1]";
-} else {
-    $lang=""
 }
 
 # Choose the pattern according to the $index
-@patterns=split(/\$\//, $patterns);
-$pattern=substr($patterns[$index], 1);
+my @patterns_arr=split(/\$\//, $patterns);
+my $pattern=substr($patterns_arr[$index], 1);
 $pattern=~s/([()])/\\$1/g;
 
-if (exists($ENV['OONAV_DEBUG'])) {
-    open(F4, ">", "/tmp/4");
+if ($debug_on) {
+    open(F4, ">", "/tmp/oonav4");
     print F4 $pattern;
     close(F4);
 }
 
-$pipe2=undef;
+my $pipe2=undef;
 if (grep { -x "$_/batcat"} split /:/,$ENV{PATH}) {
     $pipe2="batcat --color=always --style=snip -u --paging=never $lang";
 }
@@ -69,13 +75,12 @@ elsif (grep { -x "$_/bat"} split /:/,$ENV{PATH}) {
 
 open(FILE, "<", $file) or die "Can't open < $file: $!";
 
-if ($pipe2) {
+my $fout=*STDOUT;
+if (defined $pipe2) {
     open($fout, "| $pipe2") or die "Can't open a pipe to $pipe2: $!";
-} else {
-    $fout=STDOUT;
 }
 
-$found=0;
+my $found=0;
 for my $line (<FILE>) {
     if (! $found && $line=~/$pattern/) {
         $found=1;
@@ -88,7 +93,7 @@ for my $line (<FILE>) {
 
 # Finish up
 close(FILE);
-if ($pipe2) {
+if (defined $pipe2) {
     close($fout);
 }
 if (!$found) {
