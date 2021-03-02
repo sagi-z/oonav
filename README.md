@@ -3,25 +3,54 @@
 ## Description
 
 * Navigate to method implementations in derived classes.
-* Navigate to derived classes.
-* Use fzf.
-* Using tags, prefferably for the entire project.
-* Keeping a synched tags for the project should be done manually or with
-  another plugin.
+* Navigate to method in parent class.
+* Use fzf (optional).
+* Using tags, preferably for the entire project (keeping an updated tags for the
+  project should be done manually or with another plugin).
+
+## Note
+
+Without tags for the entire project this plugin has very little benefit.
 
 ## Install
 
-TBD
+`Plug 'sagi-z/oonav'`
 
 ## Configuration
 
-TBD
+'''vim
+
+" To disable default mappings creation use:
+let g:oonav#create_mappings = 0
+
+" If you don't want to allow fzf change the value to 0. The default is 1.
+let g:oonav#allow_fzf = 1
+
+" If you want to allow fzf without preview change the value to 0. The default
+" is 1.
+let g:oonav#allow_fzf_preview = 1
+
+" oonav fzf tag preview is using perl. If 'perl' is not in your path the you can
+" specify the full path here.
+" The default is to use 'perl' from your PATH.
+let g:oonav#perl = 'perl'
+
+'''
 
 ## Usage
 
-TBD
+These mappings are created by default:
+
+'''vim
+
+"Goto derived (down the class hierarchy)
+map <unique> <Leader>gd  <Plug>(oonav-down)
+
+"Goto base (up the class hierarchy)
+map <unique> <Leader>gb  <Plug>(oonav-up)
+
+'''
 
 ## License
 
 MIT
-

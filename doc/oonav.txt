@@ -12,10 +12,7 @@ Notes
 project to work across files. Managing the tags file is on you (you can try
 the 'onetag' vim plugin to automatically manage tags).
 
-* Currently only the default "forward searching patterns" are supported.
-
-* The preview (if enabled) might be wrong if there are several tags with the
-same symbol in the same source file.
+* Currently only ctag's default "forward searching patterns" are supported.
 
 Contents~
 

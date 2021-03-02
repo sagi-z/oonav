@@ -31,7 +31,7 @@ function! s:PreviewExe()
         else
             let flags=""
         endif
-        return g:oonav#perl . ' ' . s:preview . " $flags"
+        return g:oonav#perl . ' ' . s:preview . " " . flags
     else
         throw 'Perl ' . g:oonav#perl . ' was not found (change g:oonav#perl)'
     endif
@@ -232,14 +232,20 @@ function! s:Nav(name, direction)
             if g:oonav#allow_fzf && exists('*g:fzf#wrap')
                 let fzf_options = ''
                 if g:oonav#allow_fzf_preview
-                    let patterns=''
+                    let method_patterns=''
                     for tag in s:current_tags
-                        let patterns .= tag.cmd
+                        let method_patterns .= tag.cmd
+                    endfor
+                    let class_patterns=''
+                    for tag in s:current_tags
+                        let class_patterns .= s:base_classes[tag.class].tag.cmd
+                        if g:oonav#debug_on | call s:Dbg("new class pattern " . s:base_classes[tag.class].tag.cmd) | endif
                     endfor
                     let fzf_options = ['--ansi',
                                 \ '--prompt', 'Navigate' . a:direction . '?>',
                                 \ '--preview',
-                                \ s:PreviewExe() . " '" . patterns . "' {} 50",
+                                \ s:PreviewExe() . " '" . method_patterns .
+                                \ "' '" . class_patterns . "' {} 50",
                                 \ '--preview-window=down:50%']
                     if g:oonav#debug_on | call s:Dbg("fzf_options are " . string(fzf_options)) | endif
                 endif
