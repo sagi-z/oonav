@@ -5,11 +5,13 @@ use strict;
 $|=1;
 
 # Example input:
-# * $ARGV[0]='/^    def handle_after(self, cmd, parse_context, ret_val):$//^    def handle_after(self, cmd, parse_context, ret_val):$//^    def handle_after(self, cmd, parse_context, ret_val):$//^    def handle_after(self, cmd, parse_context, ret_val):$//^    def handle_after(self, cmd, parse_context, ret_val):$//^    def handle_after(self, cmd, parse_context, ret_val):$//^    def handle_after(self, cmd, parse_context, ret_val):$/'
+# $ARGV[0]='/^    def handle_after(self, cmd, parse_context, ret_val):$//^    def handle_after(self, cmd, parse_context, ret_val):$//^    def handle_after(self, cmd, parse_context, ret_val):$//^    def handle_after(self, cmd, parse_context, ret_val):$//^    def handle_after(self, cmd, parse_context, ret_val):$//^    def handle_after(self, cmd, parse_context, ret_val):$//^    def handle_after(self, cmd, parse_context, ret_val):$/'
 #
-# * $ARGV[1]='3. ScaleUpTriggerInterception.handle_after : docko/client/plugins/scale/commands.py'
+# $ARGV[1]='/^class FormatInterception(InterceptingClientCmd):$//^class HelpInterception(InterceptingClientCmd):$//^class ScaleUpTriggerInterception(InterceptingClientCmd):$//^class FormattedVersionInterception(InterceptingClientCmd):$//^class SimpleVersionCmdInterception(InterceptingClientCmd):$//^class SimpleVersionOptInterception(InterceptingClientCmd):$//^class YAMLVarsInterception(InterceptingClientCmd):$/'
 #
-# * $ARGV[2]='50'
+# $ARGV[2]='3. ScaleUpTriggerInterception.handle_after : docko/client/plugins/scale/commands.py'
+#
+# $ARGV[3]='50'
 
 if (@ARGV < 3 or @ARGV > 5) {
     print STDERR "Arguments are [--debug] METHOD_PATTERNS CLASS_PATTERNS INFO [MAXLINES=100]\n";
