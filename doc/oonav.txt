@@ -10,7 +10,9 @@ Notes
 
 * This is based on tags parsing and needs a tags file for the entire
 project to work across files. Managing the tags file is on you - manually or
-with a plugin.
+with a plugin (i.e. {gutentags}{1}).
+
+{1} https://github.com/ludovicchabant/vim-gutentags
 
 * Currently only ctag's default "forward searching patterns" are supported.
 

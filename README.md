@@ -5,8 +5,8 @@
 * Navigate to method implementations in derived classes.
 * Navigate to method in parent class.
 * Use [fzf] - optional.
-* Using tags, preferably for the entire project (keeping an updated tags for the
-  project should be done manually or with another plugin).
+* Using tags, preferably for the entire project. keeping an updated tags for the
+  project should be done manually or with another plugin (i.e [gutentags]).
 
 ![Naviagate to derived](nav.gif "Navigate to derived")
 
@@ -53,5 +53,6 @@ map <unique> <Leader>gb  <Plug>(oonav-up)
 
 MIT
 
-[fzf]:   https://github.com/junegunn/fzf.vim
+[fzf]:       https://github.com/junegunn/fzf.vim
+[gutentags]: https://github.com/ludovicchabant/vim-gutentags
 
