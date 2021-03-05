@@ -41,7 +41,7 @@ endfunction
 function! s:MyTag(tags)
     let line_num = line('.')
     if g:oonav#debug_on | call s:Dbg("line_num is " . line_num) | endif
-    let current_file = expand('%')
+    let current_file = expand('%:p')
     if g:oonav#debug_on | call s:Dbg("current_file is " . current_file) | endif
     let this_file_tags = copy(a:tags)
     call filter(this_file_tags, {idx, val -> val.filename == current_file})
@@ -124,6 +124,9 @@ endfunction
 function! s:PrepareTaglist(name)
     " Get all method/class tags for this symbol
     let s:current_tags = filter(taglist('\<' . a:name . '$'), 'v:val.kind == "m"')
+    for tag in s:current_tags
+        let tag.filename = fnamemodify(tag.filename, ':p')
+    endfor
     if g:oonav#debug_on | call s:Dbg("method/class tags found:" . string(s:current_tags)) | endif
 
     " Find what we are it the tags
@@ -200,14 +203,18 @@ function! s:GotoTag(num)
         let class_tags = filter(taglist('\<' . tag.class . '$'),
                     \ {idx, val -> val.kind == "c" && val.filename == tag.filename})
         if g:oonav#debug_on | call s:Dbg("class_tags are " . string(class_tags)) | endif
-        exe 'e ' tag.filename 
+        exe 'e ' tag.filename
+        exe 'goto 1'
         if ! empty(class_tags)
             exe class_tags[0].cmd
         endif
         exe tag.cmd
+        normal z
     else
-        exe 'e ' tag.filename 
+        exe 'e ' tag.filename
+        exe 'goto 1'
         exe tag.cmd
+        normal z
     endif
 endfunction
 
