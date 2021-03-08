@@ -37,6 +37,32 @@ function! s:PreviewExe()
     endif
 endfunction
 
+" Get context of the current file position
+function! s:GetTagContext(symbol, kind, file, line_num)
+    let lines = systemlist('ctags -f - -n ' . a:file)
+    if v:shell_error
+        if g:oonav#debug_on | call s:Dbg("GeTagContext ctags failed " . string(lines)) | endif
+        return ''
+    endif
+    for line in lines
+        let data = split(line, '\s\+')
+        let symbol = data[0]
+        let kind = data[3]
+        if kind == a:kind && symbol == a:symbol
+            let line_num = data[2]
+            if line_num == a:line_num
+                if len(data) > 4
+                    if g:oonav#debug_on | call s:Dbg("GeTagContext returning " . data[4]) | endif
+                    return data[4]
+                else
+                    return ''
+                endif
+            endif
+        endif
+    endfor
+    return ''
+endfunction
+
 " Return the tag from a tags list which points to current line
 function! s:MyTag(tags)
     let line_num = line('.')
@@ -46,28 +72,40 @@ function! s:MyTag(tags)
     let this_file_tags = copy(a:tags)
     call filter(this_file_tags, {idx, val -> val.filename == current_file})
     if g:oonav#debug_on | call s:Dbg("this_file_tags are " . string(this_file_tags)) | endif
-    for tag in this_file_tags
-        let save_cursor = getcurpos()
-        if tag.cmd[0] == '/'
-            let pattern = tag.cmd[1:-3]
-            if g:oonav#debug_on
-                call s:Dbg("Trying self search pattern " . pattern)
+    if empty(this_file_tags)
+        return v:none
+    endif
+    let context = s:GetTagContext(this_file_tags[0].name, this_file_tags[0].kind, current_file, line_num)
+    if context != ''
+        let class = split(context, ':')[1]
+        call filter(this_file_tags, {idx, val -> val.class == class})
+        if len(this_file_tags) == 1
+            return this_file_tags[0]
+        endif
+    endif
+    let save_cursor = getcurpos()
+    try
+        normal 1G
+        for tag in this_file_tags
+            if tag.cmd[0] == '/'
+                let pattern = tag.cmd[1:-3]
+                if g:oonav#debug_on
+                    call s:Dbg("Trying self search pattern " . pattern)
+                endif
+                let l = search(pattern)
+            else
+                exe tag.cmd
+                let l = line('.')
             endif
-            let move_cursor = copy(save_cursor)
-            let move_cursor[1] = move_cursor[1] - 1
-            call setpos('.', move_cursor)
-            let l = search(pattern)
-        else
-            exe tag.cmd
-            let l = line('.')
-        endif
+            if g:oonav#debug_on | call s:Dbg("l is " . l) | endif
+            if l == line_num
+                if g:oonav#debug_on | call s:Dbg("my_tag is " . string(tag)) | endif
+                return tag
+            endif
+        endfor
+    finally
         call setpos('.', save_cursor)
-        if g:oonav#debug_on | call s:Dbg("l is " . l) | endif
-        if l == line_num
-            if g:oonav#debug_on | call s:Dbg("my_tag is " . string(tag)) | endif
-            return tag
-        endif
-    endfor
+    endtry
     return v:none
 endfunction
 
@@ -129,7 +167,7 @@ function! s:PrepareTaglist(name)
     endfor
     if g:oonav#debug_on | call s:Dbg("method/class tags found:" . string(s:current_tags)) | endif
 
-    " Find what we are it the tags
+    " Find which tag belongs to our current position
     let my_tag = s:MyTag(s:current_tags)
     if my_tag isnot v:none
         " We're working on a specific kind of tags - 'c' or 'm'
