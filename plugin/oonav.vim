@@ -1,5 +1,5 @@
 " Vim global plugin for navigating to method implementations
-" Last Change:	2021 March 02
+" Last Change:	2021 March 08
 " Maintainer:	Sagi Zeevi <sagi.zeevi@gmail.com>
 " License:      MIT
 
