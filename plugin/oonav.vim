@@ -1,5 +1,5 @@
 " Vim global plugin for navigating to method implementations
-" Last Change:	2021 March 08
+" Last Change:	2021 May 01
 " Maintainer:	Sagi Zeevi <sagi.zeevi@gmail.com>
 " License:      MIT
 
@@ -12,6 +12,8 @@ let g:loaded_oonav = 1
 " temporarily change compatible option
 let s:save_cpo = &cpo
 set cpo&vim
+
+let s:vnone = ''
 
 let s:current_tags = []
 
@@ -73,7 +75,7 @@ function! s:MyTag(tags)
     call filter(this_file_tags, {idx, val -> val.filename == current_file})
     if g:oonav#debug_on | call s:Dbg("this_file_tags are " . string(this_file_tags)) | endif
     if empty(this_file_tags)
-        return v:none
+        return s:vnone
     endif
     let context = s:GetTagContext(this_file_tags[0].name, this_file_tags[0].kind, current_file, line_num)
     if context != ''
@@ -106,7 +108,7 @@ function! s:MyTag(tags)
     finally
         call setpos('.', save_cursor)
     endtry
-    return v:none
+    return s:vnone
 endfunction
 
 
@@ -116,16 +118,20 @@ function! s:ClearCache()
 endfunction
 
 
-function! s:GetBaseClasses(derived, add_self=0)
+function! s:GetBaseClasses(derived, ...)
+	let add_self = 0
+	if a:0 == 1
+		let add_self = a:1
+	endif
     if has_key(s:base_classes, a:derived)
         return s:base_classes[a:derived].classes
     endif
     let tags = filter(taglist('\<' . a:derived . '$'), 'v:val.kind == "c"')
     let res = {}
-    if a:add_self
+    if add_self
         let res[a:derived] = 1
     endif
-    let tag = v:none
+    let tag = s:vnone
     if ! empty(tags)
         let tag = tags[0]
         let cmd = tag.cmd
@@ -152,7 +158,7 @@ function! s:GetBaseClasses(derived, add_self=0)
     let res = keys(res)
     let s:base_classes[a:derived] = {'classes': res, 'tag': tag}
     if g:oonav#debug_on
-        call s:Dbg('GetBaseClasses(' . a:derived . ',' . a:add_self .
+        call s:Dbg('GetBaseClasses(' . a:derived . ',' . add_self .
                     \ ') returning ' . string(res))
     endif
     return res
@@ -169,7 +175,7 @@ function! s:PrepareTaglist(name)
 
     " Find which tag belongs to our current position
     let my_tag = s:MyTag(s:current_tags)
-    if my_tag isnot v:none
+    if my_tag isnot s:vnone
         " We're working on a specific kind of tags - 'c' or 'm'
         call filter(s:current_tags, {idx, val -> val.kind == my_tag.kind})
     else
